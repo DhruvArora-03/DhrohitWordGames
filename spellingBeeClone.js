@@ -123,7 +123,7 @@ function currentWordIsValid() {
 
 function handleEnter() {
     wordsFound.push(currentWord);
-    score += currentWord.length;
+    score += currentWord.length * 100;
     updateScore();
     updateText();
     currentWord = "";
