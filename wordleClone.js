@@ -176,7 +176,7 @@ function checkIndex(i) {
 
         highlightTile(numGuesses, i, guess.charAt(i), color);
 
-        return new Promise(resolve => setTimeout(resolve, 350)).then(() => checkIndex(i + 1));
+        return new Promise((resolve) => setTimeout(resolve, 350)).then(() => checkIndex(i + 1));
     }
 }
 

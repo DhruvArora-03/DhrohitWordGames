@@ -82,6 +82,7 @@ function initGame() {
 
 function handleKeyPress(e) {
     if (e.keyCode >= 65 && e.keyCode <= 90) {
+        console.log("letter pressed");
         if (currentWord.length < MAX_GUESS_LENGTH) {
             const letter = String.fromCharCode(e.keyCode);
 
@@ -90,16 +91,13 @@ function handleKeyPress(e) {
                 updateText();
             }
         }
-        console.log("letter pressed");
     } else if (e.keyCode == 8) { // backspace
+        console.log("backspace pressed");
         currentWord = currentWord.slice(0, -1);
         updateText();
-        console.log("backspace pressed");
     } else if (e.keyCode == 13) { // enter
-        if (currentWord.length > 2 && currentWordIsValid()) {
-            handleEnter();
-        }
         console.log("enter pressed");
+        handleEnter();
     }
 }
 
@@ -115,42 +113,63 @@ function clearGuessText() {
     ctx.fillRect(0, 0, 420, 100);
 }
 
-function currentWordIsValid() {
-
-
-    return true;
-}
-
 function handleEnter() {
-
-    if (currentWord.includes(letters[0])) {
-        console.log("word:" + currentWord);
-        var request = new XMLHttpRequest()
-        request.open('GET', 'https://dictionaryapi.com/api/v3/references/collegiate/json/' + currentWord.toLowerCase() + '?key=ca6d5bad-825b-4d20-824c-3441f01a52ec', true)
-        
-        request.onload = function () {
-            // Begin accessing JSON data here
-            var data = JSON.parse(this.response)
-            console.log(typeof data[0])
-            if (typeof data[0] != "string") {
-                wordsFound.push(currentWord);
-                score += currentWord.length;
-                updateScore();
-                updateText();
-                currentWord = "";
-                clearGuessText();
-            }
-            else {
-                console.log("Not a word!")
-            }
-        }
-        request.send()
-
-    }
-    else {
-        alert("Word needs to contain center letter!");
+    var valid = currentWordIsValid();
+    if (valid) {
+        console.log(`valid: ${valid}`);
+        wordsFound.push(currentWord);
+        score += currentWord.length * 100;
+        updateScore();
+        updateText();
+        currentWord = "";
+        clearGuessText();
     }
 }
+
+async function currentWordIsValid() {
+    var result = true;
+
+    // check word length
+    if (currentWord.length < 3) {
+        alert("Word must be at least 3 letters long!");
+        result = false;
+    }
+    else if (!currentWord.includes(letters[0])) { // includes center letter
+        alert("Word must contain center letter!");
+        result = false;
+    } else {
+        result = await checkDictionary();
+    }
+    
+    console.log("return...");
+    return result;
+}
+
+function checkDictionary() {
+    console.log("word:" + currentWord);
+    var request = new XMLHttpRequest()
+    // TODO: make key secret somehow :P
+    request.open('GET', 'https://dictionaryapi.com/api/v3/references/collegiate/json/' + currentWord.toLowerCase() + '?key=ca6d5bad-825b-4d20-824c-3441f01a52ec', true)
+
+    var result = true;
+    
+    console.log("requesting...");
+    request.onload = function () {
+        // Begin accessing JSON data here
+        var data = JSON.parse(this.response)
+        console.log(typeof data[0])
+        if (typeof data[0] == "string") {
+            result = false;
+            alert("Word is not in the dictionary!");
+            console.log("FALSE FALSE FALSE");
+        }
+    }
+    request.send();
+    console.log("just sent...");
+    console.log("word validity: " + result)
+    return result;
+}
+
 
 function updateScore() {
     clearScoreText();
