@@ -102,9 +102,16 @@ function handleKeyPress(e) {
         } else if (!currentWord.includes(letters[0])) {
             alert(`${currentWord} doesn't use ${letters[0]}`);
         } else {
-            // var newApi = new XMLHttpRequest();
-            // newApi.open('GET', 'http://www.angramica.com/lookup/' + currentWord.toLowerCase(), false);
+            var newApi = new XMLHttpRequest();
+            fetch('http://www.angramica.com/lookup/' + currentWord.toLowerCase(), true)
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                })
             
+
             var request = new XMLHttpRequest();
 
             request.open('GET', 'https://dictionaryapi.com/api/v3/references/collegiate/json/' + currentWord.toLowerCase() + '?key=ca6d5bad-825b-4d20-824c-3441f01a52ec', true);
