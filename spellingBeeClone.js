@@ -118,16 +118,7 @@ function clearGuessText() {
 }
 
 function currentWordIsValid() {
-    const url = "https://api.wordnik.com/v4/word.json/" + currentWord + "/definitions?limit=200&includeRelated=false&useCanonical=false&includeTags=false&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5";
-
-    $.ajax({
-        type: "GET",
-        url: url
-    }).done(function (result) {
-        console.log("word exists");
-    }).fail(function () {
-        console.log("word does not exist");
-    });
+    
 
     return true;
 }
