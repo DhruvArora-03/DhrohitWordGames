@@ -83,8 +83,12 @@ function initGame() {
 function handleKeyPress(e) {
     if (e.keyCode >= 65 && e.keyCode <= 90) {
         if (currentWord.length < MAX_GUESS_LENGTH) {
-            handleLetter(e.keyCode);
-            updateText();
+            const letter = String.fromCharCode(code);
+
+            if (letters.includes(letter)) {
+                currentWord += letter;
+                updateText();
+            }
         }
         console.log("letter pressed");
     } else if (e.keyCode == 8) { // backspace
@@ -97,12 +101,6 @@ function handleKeyPress(e) {
         }
         console.log("enter pressed");
     }
-}
-
-function handleLetter(code) {
-    const letter = String.fromCharCode(code);
-
-    currentWord += letter;
 }
 
 function updateText() {
