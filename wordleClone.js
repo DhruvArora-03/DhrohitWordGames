@@ -99,7 +99,7 @@ function handleKeyPress(e) {
                     handleEnter()
                 }
                 else{
-                    console.log("not a word")
+                    alert("Invalid word")
                 }
             }
 
