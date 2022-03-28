@@ -107,7 +107,7 @@ function handleKeyPress(e) {
             
             var request = new XMLHttpRequest();
 
-            request.open('GET', 'https://dictionaryapi.com/api/v3/references/collegiate/json/' + currentWord.toLowerCase() + '?key=ca6d5bad-825b-4d20-824c-3441f01a52ec', true)
+            request.open('GET', 'https://dictionaryapi.com/api/v3/references/collegiate/json/' + currentWord.toLowerCase() + '?key=ca6d5bad-825b-4d20-824c-3441f01a52ec', true);
             request.onload = function () {
                 // Begin accessing JSON data here
                 var data = JSON.parse(this.response) // returns arr of strings if invalid, objs otherwise
