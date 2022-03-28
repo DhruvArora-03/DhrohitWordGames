@@ -10,7 +10,7 @@ const ctx = canvas.getContext("2d");
 ctx.font = "30px Arial";
 
 const TILE_CONSTS = {
-    size: 50, 
+    size: 50,
     color: "#E0E0E0",
     centerColor: "#FFD700",
     centerCoords: {
@@ -18,13 +18,13 @@ const TILE_CONSTS = {
         y: 250
     },
     locationOffsets: [
-        {x: 0, y: 0},
-        {x: 0, y: -100},
-        {x: 87, y: -50},
-        {x: 87, y: 50},
-        {x: 0, y: 100},
-        {x: -87, y: -50},
-        {x: -87, y: 50}
+        { x: 0, y: 0 },
+        { x: 0, y: -100 },
+        { x: 87, y: -50 },
+        { x: 87, y: 50 },
+        { x: 0, y: 100 },
+        { x: -87, y: -50 },
+        { x: -87, y: 50 }
     ],
     letterOffsets: {
         x: 0,
@@ -83,7 +83,7 @@ function initGame() {
 function handleKeyPress(e) {
     if (e.keyCode >= 65 && e.keyCode <= 90) {
         if (currentWord.length < MAX_GUESS_LENGTH) {
-            const letter = String.fromCharCode(code);
+            const letter = String.fromCharCode(e.keyCode);
 
             if (letters.includes(letter)) {
                 currentWord += letter;
@@ -116,18 +116,40 @@ function clearGuessText() {
 }
 
 function currentWordIsValid() {
-    
+
 
     return true;
 }
 
 function handleEnter() {
-    wordsFound.push(currentWord);
-    score += currentWord.length;
-    updateScore();
-    updateText();
-    currentWord = "";
-    clearGuessText();
+
+    if (currentWord.includes(letters[0])) {
+        console.log("word:" + currentWord);
+        var request = new XMLHttpRequest()
+        request.open('GET', 'https://dictionaryapi.com/api/v3/references/collegiate/json/' + currentWord.toLowerCase() + '?key=ca6d5bad-825b-4d20-824c-3441f01a52ec', true)
+        
+        request.onload = function () {
+            // Begin accessing JSON data here
+            var data = JSON.parse(this.response)
+            console.log(typeof data[0])
+            if (typeof data[0] != "string") {
+                wordsFound.push(currentWord);
+                score += currentWord.length;
+                updateScore();
+                updateText();
+                currentWord = "";
+                clearGuessText();
+            }
+            else {
+                console.log("Not a word!")
+            }
+        }
+        request.send()
+
+    }
+    else {
+        alert("Word needs to contain center letter!");
+    }
 }
 
 function updateScore() {
@@ -154,7 +176,7 @@ function pickLetters(debuggging_print_letters) {
         if (debuggging_print_letters) {
             console.log(`Picked letter ${i} to be ${letters[i]}`);
         }
-        
+
         if (VOWELS.includes(letters[i])) {
             vowelCount++;
             if (debuggging_print_letters) {
@@ -180,11 +202,11 @@ function drawBlankTiles() {
 // x and y point to center
 function drawTile(offset, color) {
     let hexagon = new Path2D();
-    hexagon.moveTo(TILE_CONSTS.centerCoords.x + offset.x + TILE_CONSTS.size * Math.cos(0), TILE_CONSTS.centerCoords.y + offset.y +  TILE_CONSTS.size *  Math.sin(0)); 
+    hexagon.moveTo(TILE_CONSTS.centerCoords.x + offset.x + TILE_CONSTS.size * Math.cos(0), TILE_CONSTS.centerCoords.y + offset.y + TILE_CONSTS.size * Math.sin(0));
     ctx.fillStyle = color;
-    
+
     for (var i = 1; i <= 6; i++) {
-        hexagon.lineTo (TILE_CONSTS.centerCoords.x + offset.x + TILE_CONSTS.size * Math.cos(i * 2 * Math.PI / 6), TILE_CONSTS.centerCoords.y + offset.y + TILE_CONSTS.size * Math.sin(i * 2 * Math.PI / 6));
+        hexagon.lineTo(TILE_CONSTS.centerCoords.x + offset.x + TILE_CONSTS.size * Math.cos(i * 2 * Math.PI / 6), TILE_CONSTS.centerCoords.y + offset.y + TILE_CONSTS.size * Math.sin(i * 2 * Math.PI / 6));
     }
 
     ctx.fill(hexagon, "nonzero");
