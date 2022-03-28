@@ -37,7 +37,8 @@ const GUESS_COORDS = {
     y: 65
 }
 
-const MAX_GUESS_LENGTH = 20;
+const MAX_GUESS_LENGTH = 7;
+const POSSIBLE_WORD_THRESHOLD = 15;
 
 const SCORE_TEXT_COORDS = {
     score: {
@@ -56,6 +57,7 @@ const SCORE_TEXT_COORDS = {
 
 // game vars
 const letters = []; // index 0 is center letter, rest start at top and go around
+let possibleWordCount;
 const wordsFound = [];
 let score;
 let currentWord;
@@ -68,7 +70,7 @@ function initGame() {
     score = 0;
     currentWord = "";
 
-    pickLetters(false);
+    pickLetters();
     console.log(`Letters chosen: ${letters.join(', ')}`);
 
     drawBlankTiles();
@@ -101,33 +103,20 @@ function handleKeyPress(e) {
             alert(`${currentWord} is only ${currentWord.length} characters long, it must be at least 3 characters long`);
         } else if (!currentWord.includes(letters[0])) {
             alert(`${currentWord} doesn't use ${letters[0]}`);
+        } else if (wordsFound.includes(currentWord)) {
+            alert(`${currentWord} has already been found!`);
         } else {
-            var newApi = new XMLHttpRequest();
-            fetch('http://www.angramica.com/lookup/' + currentWord.toLowerCase(), true)
-                .then(response => {
-                    return response.json();
-                })
-                .then(data => {
-                    console.log(data);
-                })
-            
+            console.log(`using dictionary.js, is word valid: ${isWordInDictionary(currentWord)}`);
 
-            var request = new XMLHttpRequest();
-
-            request.open('GET', 'https://dictionaryapi.com/api/v3/references/collegiate/json/' + currentWord.toLowerCase() + '?key=ca6d5bad-825b-4d20-824c-3441f01a52ec', true);
-            request.onload = function () {
-                // Begin accessing JSON data here
-                var data = JSON.parse(this.response) // returns arr of strings if invalid, objs otherwise
-                console.log(typeof data[0])
-                if(typeof data[0] != "string" && currentWord.length > 2 && currentWord.includes(letters[0])) {
-                    handleEnter();
-                }
-                else{
-                    alert(`${currentWord} doesn't exist in the dictionary!`);
-                }
+            if(isWordInDictionary(currentWord) && currentWord.length > 2 && currentWord.includes(letters[0])) {
+                handleEnter();
+            } else {
+                alert(`${currentWord} doesn't exist in the dictionary!`);
             }
-            request.send()
         }
+        
+        currentWord = "";
+        updateText();
     }
 }
 
@@ -147,11 +136,9 @@ function handleEnter() {
     wordsFound.push(currentWord);
     score += currentWord.length * 100;
     updateScore();
-    updateText();
     currentWord = "";
-    clearGuessText();
+    updateText();
 }
-
 
 function updateScore() {
     clearScoreText();
@@ -168,29 +155,54 @@ function clearScoreText() {
     ctx.fillRect(SCORE_TEXT_COORDS.score.x, 0, canvas.width - SCORE_TEXT_COORDS.score.x, 80);
 }
 
-function pickLetters(debuggging_print_letters) {
+function pickLetters() {
     let vowelCount = 0;
     for (let i = 0; i < 7; i++) {
         do {
             letters[i] = ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
         } while (letters.slice(0, i).includes(letters[i]));
-        if (debuggging_print_letters) {
-            console.log(`Picked letter ${i} to be ${letters[i]}`);
-        }
 
         if (VOWELS.includes(letters[i])) {
             vowelCount++;
-            if (debuggging_print_letters) {
-                console.log(`${letters[i]} is a vowel, vowel count is now ${vowelCount}`);
-            }
         }
     }
 
-    if (vowelCount < 2 || vowelCount > 2) {
-        if (debuggging_print_letters) {
-            console.log(`Only had ${vowelCount} vowel(s), running pick_letters() again`);
+    if (vowelCount < 2 || vowelCount > 3) {
+        console.log(`vowel count is ${vowelCount}, trying again`);
+        pickLetters();
+    } else {
+        console.log(`running numWordsPossible with, letters: ${letters}`);
+        possibleWordCount = 0;
+        numWordsPossible();
+        console.log(`${possibleWordCount} possible words`);
+        if (possibleWordCount < POSSIBLE_WORD_THRESHOLD) {
+            console.log("fuckywucky, trying again")
+            pickLetters();
         }
-        pickLetters(debuggging_print_letters);
+    }
+}
+
+// TODO: consider BFS
+function numWordsPossible() {
+    numPossible("");
+}
+
+function numPossible(wordSoFar) {
+    if (possibleWordCount >= POSSIBLE_WORD_THRESHOLD || (wordSoFar.length > 2 && (wordSoFar[-1] == wordSoFar[-2] == wordSoFar[-3] || !VOWELS.some(vowel => wordSoFar.includes(vowel))))) {
+        return;
+    }
+    
+    // check current word so far
+    if (wordSoFar.length > 2 && wordSoFar.includes(letters[0]) && isWordInDictionary(wordSoFar)) {
+        possibleWordCount++;
+        console.log(wordSoFar);
+    }
+
+    // check all recurrisve possibilities
+    if (wordSoFar.length < MAX_GUESS_LENGTH) {
+        for (let i = 0; i < letters.length && possibleWordCount < POSSIBLE_WORD_THRESHOLD; i++) {
+            numPossible(wordSoFar + letters[i]);
+        }
     }
 }
 
@@ -200,7 +212,6 @@ function drawBlankTiles() {
     }
 }
 
-// x and y point to center
 function drawTile(offset, color) {
     let hexagon = new Path2D();
     hexagon.moveTo(TILE_CONSTS.centerCoords.x + offset.x + TILE_CONSTS.size * Math.cos(0), TILE_CONSTS.centerCoords.y + offset.y + TILE_CONSTS.size * Math.sin(0));
