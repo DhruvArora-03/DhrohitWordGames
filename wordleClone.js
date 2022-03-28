@@ -93,7 +93,7 @@ function handleKeyPress(e) {
             request.open('GET', 'https://dictionaryapi.com/api/v3/references/collegiate/json/' + guess.toLowerCase() + '?key=ca6d5bad-825b-4d20-824c-3441f01a52ec', true)
             request.onload = function () {
                 // Begin accessing JSON data here
-                var data = JSON.parse(this.response)
+                var data = JSON.parse(this.response) // returns arr of strings if invalid, objs otherwise
                 console.log(typeof data[0])
                 if(typeof data[0] != "string"){
                     handleEnter()
