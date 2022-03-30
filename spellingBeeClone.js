@@ -1,6 +1,7 @@
 `use strict`
 
 document.addEventListener("keydown", handleKeyPress);
+button.addEventListener("click", initGame);
 
 // universal consts
 const ALPHABET = Array.from("ABCDEFGHIJKLNNOPQRSTUVWXYZ");
@@ -45,7 +46,7 @@ const SCORE_TEXT_COORDS = {
         x: 430,
         y: 50
     },
-    wordsFound: {
+    numWordsFound: {
         x: 430,
         y: 80
     },
@@ -62,12 +63,11 @@ const wordsFound = [];
 let score;
 let currentWord;
 
-initGame();
-
 function initGame() {
+    // take away focus from button
+    button.blur();
+
     letters.length = 0;
-    wordsFound.length = 0;
-    score = 0;
     currentWord = "";
 
     pickLetters();
@@ -78,8 +78,19 @@ function initGame() {
     writeLettersOnTiles();
     console.log("Letters written on tiles");
 
-    SCORE_TEXT_COORDS.wordList.y = SCORE_TEXT_COORDS.wordsFound.y;
+    resetWordsFound();
+}
+
+function resetWordsFound() {
+    wordsFound.length = 0;
+    score = 0;
+
+    SCORE_TEXT_COORDS.wordList.y = SCORE_TEXT_COORDS.numWordsFound.y;
     updateScore();
+    
+    // erase words found
+    ctx.fillStyle = "white";
+    ctx.fillRect(SCORE_TEXT_COORDS.wordList.x, SCORE_TEXT_COORDS.wordList.y, canvas.width - SCORE_TEXT_COORDS.wordList.x, canvas.height - SCORE_TEXT_COORDS.wordList.y);
 }
 
 function handleKeyPress(e) {
@@ -145,7 +156,7 @@ function updateScore() {
     ctx.fillStyle = "black";
     ctx.textAlign = "left";
     ctx.fillText(`Score: ${score}`, SCORE_TEXT_COORDS.score.x, SCORE_TEXT_COORDS.score.y);
-    ctx.fillText(`Words Found: ${wordsFound.length}`, SCORE_TEXT_COORDS.wordsFound.x, SCORE_TEXT_COORDS.wordsFound.y);
+    ctx.fillText(`Words Found: ${wordsFound.length}`, SCORE_TEXT_COORDS.numWordsFound.x, SCORE_TEXT_COORDS.numWordsFound.y);
     ctx.fillText(`${currentWord}`, SCORE_TEXT_COORDS.wordList.x, SCORE_TEXT_COORDS.wordList.y);
     SCORE_TEXT_COORDS.wordList.y += 30;
 }
@@ -173,7 +184,7 @@ function pickLetters() {
     } else {
         console.log(`running numWordsPossible with, letters: ${letters}`);
         possibleWordCount = 0;
-        numWordsPossible();
+        numWordsPossibleBFS();
         console.log(`${possibleWordCount} possible words`);
         if (possibleWordCount < POSSIBLE_WORD_THRESHOLD) {
             console.log("fuckywucky, trying again")
@@ -182,28 +193,60 @@ function pickLetters() {
     }
 }
 
-// TODO: consider BFS
-function numWordsPossible() {
-    numPossible("");
+function numWordsPossibleDFS() {
+    numPossibleDFS("");
 }
 
-function numPossible(wordSoFar) {
-    if (possibleWordCount >= POSSIBLE_WORD_THRESHOLD || (wordSoFar.length > 2 && (wordSoFar[-1] == wordSoFar[-2] == wordSoFar[-3] || !VOWELS.some(vowel => wordSoFar.includes(vowel))))) {
+function numPossibleDFS(wordSoFar) {
+    if (possibleWordCount >= POSSIBLE_WORD_THRESHOLD || (wordSoFar.length > 3 && (wordSoFar[-1] == wordSoFar[-2] == wordSoFar[-3] || !VOWELS.some(vowel => wordSoFar.includes(vowel))))) {
         return;
     }
     
     // check current word so far
     if (wordSoFar.length > 2 && wordSoFar.includes(letters[0]) && isWordInDictionary(wordSoFar)) {
         possibleWordCount++;
-        console.log(wordSoFar);
+        console.log(`word found: ${wordSoFar}, num words found so far: ${possibleWordCount}`);
     }
 
     // check all recurrisve possibilities
     if (wordSoFar.length < MAX_GUESS_LENGTH) {
         for (let i = 0; i < letters.length && possibleWordCount < POSSIBLE_WORD_THRESHOLD; i++) {
-            numPossible(wordSoFar + letters[i]);
+            numPossibleDFS(wordSoFar + letters[i]);
         }
     }
+}
+
+function numWordsPossibleBFS() {
+    let queue = [""];
+    let numFails = 0;
+
+    do {
+        var word = queue.shift();
+        
+        // check word
+        if (word.length > 3 && word.includes(letters[0]) && isWordInDictionary(word)) {
+            possibleWordCount++;
+            console.log(`word found: ${word}, num words found so far: ${possibleWordCount}, tries taken: ${numFails}`);
+        } else {
+            numFails++;
+
+            if (numFails % 1000 == 0) {
+                console.log(`Now at ${numFails} tries`);
+            }
+        }
+
+        // if (word.length > 3 &&
+        //     (word[-1] == word[-2] == word[-3] ||
+        //         !VOWELS.some(vowel => word.includes(vowel)))) {
+        //     continue;
+        // }
+
+        // add possibilities to queue
+        for (let i = 0; i < letters.length; i++) {
+            queue.push(word + letters[i]);
+        }
+
+    } while(numFails < 50n  000 && possibleWordCount < POSSIBLE_WORD_THRESHOLD && queue.length > 0);
 }
 
 function drawBlankTiles() {
