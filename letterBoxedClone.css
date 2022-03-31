@@ -1,0 +1,16 @@
+* {
+    background: #FFFFFF;
+    font-family: helvetica;
+    text-align: center;
+    align-items: center;
+}
+
+a {
+    text-align: left;
+    font-size: x-large;
+    position: absolute;
+    left: 25px;
+    top: 15px;
+    color: blue;
+    border: 3px solid;
+}
