@@ -246,7 +246,7 @@ function numWordsPossibleBFS() {
             queue.push(word + letters[i]);
         }
 
-    } while(numFails < 50n  000 && possibleWordCount < POSSIBLE_WORD_THRESHOLD && queue.length > 0);
+    } while(numFails < 50000 && possibleWordCount < POSSIBLE_WORD_THRESHOLD && queue.length > 0);
 }
 
 function drawBlankTiles() {
