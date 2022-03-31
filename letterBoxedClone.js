@@ -3,8 +3,12 @@
 document.addEventListener("keydown", handleKeyPress);
 button.addEventListener("click", initGame);
 
+// universal consts
+const ALPHABET = Array.from("ABCDEFGHIJKLNNOPQRSTUVWXYZ");
+const VOWELS = Array.from("AEIOU");
 
-
+const ctx = canvas.getContext("2d");
+ctx.font = "30px Arial";
 
 function initGame() {
 
