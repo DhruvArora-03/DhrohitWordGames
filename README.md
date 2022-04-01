@@ -4,8 +4,8 @@ Word Games Based on the different games offered by the NYT
 
 Currently features:
 
-Wordle Clone
+	Wordle Clone
 
-Spelling Bee Clone
+	Spelling Bee Clone
 
-Letter Boxed Clone (in progress)
+	Letter Boxed Clone (in progress)
