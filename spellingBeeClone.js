@@ -40,6 +40,7 @@ const GUESS_COORDS = {
 
 const MAX_GUESS_LENGTH = 7;
 const POSSIBLE_WORD_THRESHOLD = 15;
+const FAIL_THRESHOLD = 20000;
 
 const SCORE_TEXT_COORDS = {
     score: {
@@ -246,7 +247,7 @@ function numWordsPossibleBFS() {
             queue.push(word + letters[i]);
         }
 
-    } while(numFails < 50000 && possibleWordCount < POSSIBLE_WORD_THRESHOLD && queue.length > 0);
+    } while(numFails < FAIL_THRESHOLD && possibleWordCount < POSSIBLE_WORD_THRESHOLD && queue.length > 0);
 }
 
 function drawBlankTiles() {
