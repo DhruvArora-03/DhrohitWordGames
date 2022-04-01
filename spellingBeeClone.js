@@ -10,9 +10,11 @@ const VOWELS = Array.from("AEIOU");
 const ctx = canvas.getContext("2d");
 ctx.font = "30px Arial";
 
+const BACKGROUND_COLOR = "#FEFEFE";
+
 const TILE_CONSTS = {
     size: 50,
-    color: "#E0E0E0",
+    color: "#DDDDDD",
     centerColor: "#FFD700",
     centerCoords: {
         x: 200,
@@ -70,6 +72,9 @@ initGame();
 function initGame() {
     // take away focus from button
     resetButton.blur();
+    // clear screen
+    ctx.fillStyle = BACKGROUND_COLOR;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     letters.length = 0;
     currentWord = "";
@@ -93,7 +98,7 @@ function resetWordsFound() {
     updateScore();
     
     // erase words found
-    ctx.fillStyle = "white";
+    ctx.fillStyle = BACKGROUND_COLOR;
     ctx.fillRect(SCORE_TEXT_COORDS.wordList.x, SCORE_TEXT_COORDS.wordList.y, canvas.width - SCORE_TEXT_COORDS.wordList.x, canvas.height - SCORE_TEXT_COORDS.wordList.y);
 }
 
@@ -143,7 +148,7 @@ function updateText() {
 }
 
 function clearGuessText() {
-    ctx.fillStyle = "white";
+    ctx.fillStyle = BACKGROUND_COLOR;
     ctx.fillRect(0, 0, 420, 100);
 }
 
@@ -166,7 +171,7 @@ function updateScore() {
 }
 
 function clearScoreText() {
-    ctx.fillStyle = "white";
+    ctx.fillStyle = BACKGROUND_COLOR;
     ctx.fillRect(SCORE_TEXT_COORDS.score.x, 0, canvas.width - SCORE_TEXT_COORDS.score.x, 80);
 }
 
