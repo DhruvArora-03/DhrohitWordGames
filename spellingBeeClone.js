@@ -1,7 +1,7 @@
 `use strict`
 
 document.addEventListener("keydown", handleKeyPress);
-button.addEventListener("click", initGame);
+resetButton.addEventListener("click", initGame);
 
 // universal consts
 const ALPHABET = Array.from("ABCDEFGHIJKLNNOPQRSTUVWXYZ");
@@ -64,9 +64,12 @@ const wordsFound = [];
 let score;
 let currentWord;
 
+// start game
+initGame();
+
 function initGame() {
     // take away focus from button
-    button.blur();
+    resetButton.blur();
 
     letters.length = 0;
     currentWord = "";
