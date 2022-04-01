@@ -23,6 +23,7 @@ a {
 
 #resetButton{
     font-size: larger;
+    display: none;
 }
 
 #winLossText {
