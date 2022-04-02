@@ -61,8 +61,9 @@ let guess;
 let letters; // size 4 array of size 3 arrays
 let lettersUsed; // same dimensions as letters array - holds ints representing # of times used
 let current;
+let lines;
 
-initGame();
+initGame(); 
 
 function initGame() {
     // take away focus from button
@@ -75,8 +76,8 @@ function initGame() {
     guess = "";
     letters = generateLetters();
     lettersUsed = Array.from(Array(4), () => Array.from(Array(3), () => 0));
-    console.log(lettersUsed);
     current = {side: -1, index: -1};
+    lines = [];
 
     redraw();
 
@@ -142,33 +143,48 @@ function handleKeyPress(e) {
     if (e.keyCode >= 65 && e.keyCode <= 90) {
         console.log("letter pressed");
 
-        // check letter limit
-        if (guess.length > 15) {
-            return;
-        }
-
-        // check if letter pressed is exists, and if so act accordingly
-        let letter = String.fromCharCode(e.keyCode);
-
-        let location = indexOfLetter(letter);
-        if (location.side != current.side) {
-            guess += letter;
-            current.side = location.side;
-            current.index = location.index;
-            lettersUsed[location.side][location.i]++;
-            redraw();
-        }
+        handleLetter(e.keyCode);
     } else if (e.keyCode == 8) { // backspace
         console.log("backspace pressed");
 
-        lettersUsed[current.side][current.index]--;
-        guess = guess.slice(0, -1);
-        current = indexOfLetter(guess.slice(-1));
-        redraw();
-
+        handleBackspace();
     } else if (e.keyCode == 13) { // enter
         console.log("enter pressed");
     }
+}
+
+function handleLetter(keyCode) {
+    // check letter limit
+    if (guess.length > 15) {
+        return;
+    }
+
+    // check if letter pressed is exists, and if so act accordingly
+    let letter = String.fromCharCode(keyCode);
+
+    let location = indexOfLetter(letter);
+    if (location.side != current.side) {
+        guess += letter;
+        current.side = location.side;
+        current.index = location.index;
+        lettersUsed[location.side][location.i]++;
+        redraw();
+    } else if (location.side < 0) {
+        alert(`${letter} isn't a valid option!`);
+    } else {
+        
+    }
+}
+
+function handleBackspace() {
+    if (guess.length < 1) {
+        return;
+    }
+
+    lettersUsed[current.side][current.index]--;
+    guess = guess.slice(0, -1);
+    current = indexOfLetter(guess.slice(-1));
+    redraw();
 }
 
 function indexOfLetter(letter) {
