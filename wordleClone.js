@@ -132,7 +132,7 @@ function handleEnter() {
                 winLossText.textContent = `You won in ${numGuesses}/6 guesses! Great work :)`;
             } else {
                 winLossText.style.color = "red";
-                winLossText.textContent = `Wow, You lost after using all ${numGuesses} guesses, lol :P`;
+                winLossText.textContent = `Wow! You lost after using ALL ${numGuesses} guesses, lol :P`;
             }
 
             // show the button
