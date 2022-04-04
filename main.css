@@ -1,15 +1,10 @@
-:root {
-    --light-color: #e3fff6;
-    --dark-color: #04607c;
-}
-
 * {
-    color: var(--fontColor);
+    color: #04607c;
     font-family: helvetica;
     list-style: square;
 }
 body {
-    background: var(--bg);
+    background: #e3fff6;
 }
 
 h1 {
@@ -28,16 +23,6 @@ h2 {
 
 ul {
     font-size: 20px;
-}
-
-.light-theme {
-    --bg: var(--light-color);
-    --fontColor: var(--dark-color);
-}
-
-.dark-theme {
-    --bg: var(--dark-color); 
-    --fontColor:var(--light-color);
 }
 
 .btn {
