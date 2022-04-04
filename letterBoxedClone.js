@@ -219,7 +219,7 @@ function handleLetter(keyCode) {
 }
 
 function handleBackspace() {
-    if (guess.length < 1) {
+    if (guess.length < 1 || (pastGuesses.length > 0 && guess.length < 2)) {
         return;
     }
 
@@ -248,7 +248,7 @@ function handleEnter() {
     if (isWordInDictionary(guess)) {
         console.log(`Logging ${guess} as a guess`);
         pastGuesses.push(guess);
-        guess = "";
+        guess = guess.slice(-1);
         lines.add
         redraw();
     }
