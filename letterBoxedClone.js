@@ -72,6 +72,7 @@ let letters; // size 4 array of size 3 arrays
 let lettersUsed; // same dimensions as letters array - holds ints representing # of times used
 let current;
 let lines;
+let gameWon;
 
 initGame(); 
 
@@ -89,6 +90,7 @@ function initGame() {
     lettersUsed = new Array(letters.length).fill(undefined).map(() => Array(letters[0].length).fill(0));
     current = {side: -1, index: -1};
     lines = [];
+    gameWon = false;
 
     redraw();
 
@@ -99,10 +101,10 @@ function initGame() {
 // currently using static vals for testing purposes
 function generateLetters() {
     return [
-        ['S', 'A', 'D',], // top row
-        ['H', 'F', 'M',], // right side
-        ['U', 'I', 'C',], // bottom row
-        ['P', 'R', 'L',]  // left side
+        ['O', 'Y', 'W',], // top row
+        ['I', 'D', 'T',], // right side
+        ['E', 'V', 'N',], // bottom row
+        ['A', 'R', 'P',]  // left side
     ];
 }
 
@@ -174,18 +176,20 @@ function redrawBoard() {
 }
 
 function handleKeyPress(e) {
-    if (e.keyCode >= 65 && e.keyCode <= 90) {
-        console.log("letter pressed");
+    if (!gameWon) {
+        if (e.keyCode >= 65 && e.keyCode <= 90) {
+            console.log("letter pressed");
 
-        handleLetter(e.keyCode);
-    } else if (e.keyCode == 8) { // backspace
-        console.log("backspace pressed");
+            handleLetter(e.keyCode);
+        } else if (e.keyCode == 8) { // backspace
+            console.log("backspace pressed");
 
-        handleBackspace();
-    } else if (e.keyCode == 13) { // enter
-        console.log("enter pressed");
+            handleBackspace();
+        } else if (e.keyCode == 13) { // enter
+            console.log("enter pressed");
 
-        handleEnter();
+            handleEnter();
+        }
     }
 }
 
@@ -214,7 +218,7 @@ function handleLetter(keyCode) {
     } else if (location.side < 0) {
         alert(`${letter} isn't a valid option!`);
     } else {
-        alert(`Can't repeat letters from the same side!`);
+        // alert(`Can't repeat letters from the same side!`); //this alert was annoying
     }
 }
 
@@ -247,9 +251,26 @@ function handleEnter() {
     // if guess is a real word:
     if (isWordInDictionary(guess)) {
         console.log(`Logging ${guess} as a guess`);
-        pastGuesses.push(guess);
-        guess = guess.slice(-1);
-        lines.add
+        pastGuesses.push(guess); // log guess
+        guess = guess.slice(-1); // add forced letter
         redraw();
+
+        // check if game won
+        gameWon = true;
+        for (let side = 0; gameWon && side < lettersUsed.length; side++) {
+            for (let i = 0; gameWon && i < lettersUsed[side].length; i++) {
+                if (lettersUsed[side][i] == 0) {
+                    gameWon = false;
+                }
+            }
+        }
+
+        // if gameWon (do the fun fun)
+        if (gameWon) {
+            guess = "";
+            current = {side: -1, index: -1};
+            redraw();
+            alert("You won! (give this msg more pizzazz later)");
+        }
     }
 }
