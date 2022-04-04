@@ -51,13 +51,23 @@ const LETTER_OFFSETS = [
     {x: -40, y: 10} // left side
 ]
 
+const CIRCLE_RADIUS = 10;
+
+const GUESS_LINE_LENGTH = ctx.measureText("LETTER").width; // default width of line
+
 const GUESS_COORDS = {
     x: 198,
     y: 100
 };
 
+const PAST_GUESS_COORDS = {
+    x: GUESS_COORDS.x,
+    y: GUESS_COORDS.y + 70
+}
+
 // game vars
 let guess;
+let pastGuesses;
 let letters; // size 4 array of size 3 arrays
 let lettersUsed; // same dimensions as letters array - holds ints representing # of times used
 let current;
@@ -74,8 +84,9 @@ function initGame() {
 
     // reset game vars
     guess = "";
+    pastGuesses = [];
     letters = generateLetters();
-    lettersUsed = Array.from(Array(4), () => Array.from(Array(3), () => 0));
+    lettersUsed = new Array(letters.length).fill(undefined).map(() => Array(letters[0].length).fill(0));
     current = {side: -1, index: -1};
     lines = [];
 
@@ -96,8 +107,26 @@ function generateLetters() {
 }
 
 function redraw() {
+    // clear everything
+    ctx.fillStyle = BACKGROUND_COLOR;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     redrawBoard();
-    redrawGuess();
+    
+    // draw guess and line under it
+    ctx.fillStyle = ctx.strokeStyle = "black";
+    ctx.fillText(guess, GUESS_COORDS.x, GUESS_COORDS.y);
+    ctx.beginPath();
+    var width = ctx.measureText(guess).width;
+    width = width > GUESS_LINE_LENGTH ? width: GUESS_LINE_LENGTH; // allows for automatically resizing line
+    ctx.moveTo(GUESS_COORDS.x - width / 2 - 20, GUESS_COORDS.y + 15);
+    ctx.lineTo(GUESS_COORDS.x + width / 2 + 20, GUESS_COORDS.y + 15);
+    ctx.stroke();
+
+    // draw all old guesses
+    for (let i = 0; i < pastGuesses.length; i++) {
+        ctx.fillText(pastGuesses[i], PAST_GUESS_COORDS.x, PAST_GUESS_COORDS.y + (i * 30));
+    }
 }
 
 function redrawBoard() {
@@ -105,11 +134,22 @@ function redrawBoard() {
     ctx.fillStyle = "white";
     ctx.fillRect(BOARD_VALS.x, BOARD_VALS.y, BOARD_VALS.width, BOARD_VALS.height);
     
+    // draw the lines
+    if (lines.length > 0) {
+        ctx.strokeStyle = BACKGROUND_COLOR;
+        ctx.beginPath();
+        ctx.moveTo(LETTER_COORDS[lines[0].start.side][lines[0].start.index].x, LETTER_COORDS[lines[0].start.side][lines[0].start.index].y);
+        for (let i = 0; i < lines.length; i++) {
+            ctx.lineTo(LETTER_COORDS[lines[i].end.side][lines[i].end.index].x, LETTER_COORDS[lines[i].end.side][lines[i].end.index].y);
+        }
+        ctx.stroke();
+    }
+
     // draw the border rectange of the board
     ctx.strokeStyle = "black";
     ctx.strokeRect(BOARD_VALS.x, BOARD_VALS.y, BOARD_VALS.width, BOARD_VALS.height);
     
-    // draw the letters and their empty circles
+    // draw the letters and their circles
     for (let side = 0; side < letters.length; side++) {
         for (let i = 0; i < letters[side].length; i++) {
             ctx.fillStyle = lettersUsed[side][i] > 0 ? "black" : "white";
@@ -117,27 +157,21 @@ function redrawBoard() {
 
             // draw path of circle
             ctx.beginPath();
-            ctx.arc(LETTER_COORDS[side][i].x, LETTER_COORDS[side][i].y, 10, 0, 2 * Math.PI);
-            // fill black if this spot is the last entered letter
-            ctx.fillStyle = current.side == side && current.index == i ? "black" : "white";
+            ctx.arc(LETTER_COORDS[side][i].x, LETTER_COORDS[side][i].y, CIRCLE_RADIUS, 0, 2 * Math.PI);
+
+            // fill black if this spot is the last entered letter and pink if used
+            if (current.side == side && current.index == i) {
+                ctx.fillStyle = "black";
+            } else if (lettersUsed[side][i] > 0) {
+                ctx.fillStyle = BACKGROUND_COLOR;
+            } else {
+                ctx.fillStyle = "white";
+            }
             ctx.fill();
             ctx.stroke();
         }
     }
 }
-
-function redrawGuess() {
-    clearGuessText();
-    // draw new guess
-    ctx.fillStyle = "black";
-    ctx.fillText(guess, GUESS_COORDS.x, GUESS_COORDS.y);
-}
-
-function clearGuessText() {
-    ctx.fillStyle = BACKGROUND_COLOR;
-    ctx.fillRect(0, 50, 395, 50);
-}
-
 
 function handleKeyPress(e) {
     if (e.keyCode >= 65 && e.keyCode <= 90) {
@@ -150,6 +184,8 @@ function handleKeyPress(e) {
         handleBackspace();
     } else if (e.keyCode == 13) { // enter
         console.log("enter pressed");
+
+        handleEnter();
     }
 }
 
@@ -163,16 +199,22 @@ function handleLetter(keyCode) {
     let letter = String.fromCharCode(keyCode);
 
     let location = indexOfLetter(letter);
-    if (location.side != current.side) {
+    if (location.side >= 0 && location.side != current.side) {
+        // update guess
         guess += letter;
-        current.side = location.side;
-        current.index = location.index;
-        lettersUsed[location.side][location.i]++;
+
+        // add line to list
+        if (current.side >= 0) {
+            lines.push({ start: current, end: location});
+        }
+
+        current = location;
+        lettersUsed[location.side][location.index]++;
         redraw();
     } else if (location.side < 0) {
         alert(`${letter} isn't a valid option!`);
     } else {
-        
+        alert(`Can't repeat letters from the same side!`);
     }
 }
 
@@ -184,6 +226,7 @@ function handleBackspace() {
     lettersUsed[current.side][current.index]--;
     guess = guess.slice(0, -1);
     current = indexOfLetter(guess.slice(-1));
+    lines.pop();
     redraw();
 }
 
@@ -198,4 +241,15 @@ function indexOfLetter(letter) {
     }
 
     return {side: -1, index: -1};
+}
+
+function handleEnter() {
+    // if guess is a real word:
+    if (isWordInDictionary(guess)) {
+        console.log(`Logging ${guess} as a guess`);
+        pastGuesses.push(guess);
+        guess = "";
+        lines.add
+        redraw();
+    }
 }
