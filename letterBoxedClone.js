@@ -223,14 +223,33 @@ function handleLetter(keyCode) {
 }
 
 function handleBackspace() {
-    if (guess.length < 1 || (pastGuesses.length > 0 && guess.length < 2)) {
+    // check if there is a letter to remove in this word
+    if (guess.length < 1) {
         return;
     }
-
+    
     lettersUsed[current.side][current.index]--;
     guess = guess.slice(0, -1);
     current = indexOfLetter(guess.slice(-1));
     lines.pop();
+
+    // check if first letter was removed -> and if need to go to prev word
+    if (guess.length == 0) {
+        // if this is the first word, there is nothing special to do
+        if (pastGuesses.length == 0) {
+            // nothing
+        } else {
+            // otherwise go to the last word
+            guess = pastGuesses.pop();
+            current = indexOfLetter(guess.slice(-1));
+            lines = [];
+            
+            for (let i = 0; i < guess.length - 1; i++) {
+                lines.push({ start: indexOfLetter(guess[i]), end: indexOfLetter(guess[i + 1])});
+            }
+        }
+    }
+
     redraw();
 }
 
@@ -253,6 +272,8 @@ function handleEnter() {
         console.log(`Logging ${guess} as a guess`);
         pastGuesses.push(guess); // log guess
         guess = guess.slice(-1); // add forced letter
+        let location = indexOfLetter(guess);
+        lettersUsed[location.side][location.index]++; // add forced letter to lettersUsed
         redraw();
 
         // check if game won
